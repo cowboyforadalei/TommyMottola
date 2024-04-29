@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bancos de Logins</title>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #loginTable {
+            border-collapse: collapse;
+            width: 70%;
+            margin: 0 auto;
+        }
+
+        #loginTable th, #loginTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #loginTable th {
+            background-color: #f2f2f2;
+        }
+
+        .deleteButton {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            margin: 2px 0;
+            cursor: pointer;
+        }
+
+        .deleteButton:hover {
+            background-color: #d32f2f;
+        }
+
+        #confirmAddBtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #confirmAddBtn:hover {
+            background-color: #45a049;
+        }
+
+        #addLoginBtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        #addLoginBtn:hover {
+            background-color: #45a049;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Banco de Logins</h1>
+        <table id="loginTable">
+            <thead>
+                <tr>
+                    <th>Site</th>
+                    <th>Email</th>
+                    <th>Senha</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="loginList">
+                <!-- Linhas serão adicionadas aqui -->
+            </tbody>
+        </table>
+        <button id="addLoginBtn">Adicionar Novo Login</button>
+        <div id="addLoginForm" style="display: none;">
+            <input type="text" id="siteInput" placeholder="Nome do site">
+            <input type="email" id="emailInput" placeholder="Email">
+            <input type="password" id="senhaInput" placeholder="Senha">
+            <button id="confirmAddBtn">Adicionar</button>
+        </div>
+    </div>
+
+    <script>
+        function adicionarLogin(site, email, senha) {
+            var tableBody = document.getElementById("loginList");
+            var newRow = tableBody.insertRow();
+            var cell1 = newRow.insertCell(0);
+            var cell2 = newRow.insertCell(1);
+            var cell3 = newRow.insertCell(2);
+            var cell4 = newRow.insertCell(3);
+
+            cell1.textContent = site;
+            cell2.textContent = email;
+            cell3.textContent = senha;
+            cell4.innerHTML = '<button class="deleteButton">Excluir</button>';
+            cell4.querySelector(".deleteButton").addEventListener("click", function() {
+                newRow.remove();
+                // Remover do armazenamento local
+                var logins = JSON.parse(localStorage.getItem("logins")) || [];
+                var indexToRemove = logins.findIndex(function(login) {
+                    return login.site === site && login.email === email && login.senha === senha;
+                });
+                if (indexToRemove !== -1) {
+                    logins.splice(indexToRemove, 1);
+                    localStorage.setItem("logins", JSON.stringify(logins));
+                }
+            });
+        }
+
+        document.getElementById("siteInput").addEventListener("keypress", function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById("emailInput").focus();
+            }
+        });
+
+        document.getElementById("emailInput").addEventListener("keypress", function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById("senhaInput").focus();
+            }
+        });
+
+        document.getElementById("senhaInput").addEventListener("keypress", function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById("confirmAddBtn").click();
+            }
+        });
+
+        document.getElementById("addLoginBtn").addEventListener("click", function() {
+            document.getElementById("addLoginForm").style.display = "block";
+            document.getElementById("siteInput").focus();
+        });
+
+        document.getElementById("confirmAddBtn").addEventListener("click", function() {
+            var site = document.getElementById("siteInput").value;
+            var email = document.getElementById("emailInput").value;
+            var senha = document.getElementById("senhaInput").value;
+
+            adicionarLogin(site, email, senha);
+
+            document.getElementById("siteInput").value = "";
+            document.getElementById("emailInput").value = "";
+            document.getElementById("senhaInput").value = "";
+            document.getElementById("addLoginForm").style.display = "none";
+
+            // Salvando os dados no armazenamento local
+            var logins = JSON.parse(localStorage.getItem("logins")) || [];
+            logins.push({ site: site, email: email, senha: senha });
+            localStorage.setItem("logins", JSON.stringify(logins));
+        });
+
+        // Carregar os logins salvos ao carregar a página
+        window.onload = function() {
+            var logins = JSON.parse(localStorage.getItem("logins")) || [];
+            logins.forEach(function(login) {
+                adicionarLogin(login.site, login.email, login.senha);
+            });
+        };
+    </script>
+</body>
+</html>
